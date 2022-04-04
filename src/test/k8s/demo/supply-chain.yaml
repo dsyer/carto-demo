@@ -1,0 +1,24 @@
+---
+apiVersion: carto.run/v1alpha1
+kind: ClusterSupplyChain
+metadata:
+  name: supply-chain
+spec:
+  selector:
+    app.tanzu.vmware.com/workload-type: web
+  resources:
+    - name: image-builder
+      templateRef:
+        kind: ClusterImageTemplate
+        name: image
+      params:
+        - name: image_prefix
+          default: localhost:5000/apps/
+
+    - name: deployer
+      templateRef:
+        kind: ClusterTemplate
+        name: deployment
+      images:
+        - resource: image-builder
+          name: image

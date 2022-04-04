@@ -1,0 +1,25 @@
+apiVersion: carto.run/v1alpha1
+kind: ClusterTemplate
+metadata:
+  name: deployment
+spec:
+  template:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: $(workload.metadata.name)$
+      labels:
+        app: $(workload.metadata.name)$
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: $(workload.metadata.name)$
+      template:
+        metadata:
+          labels:
+            app: $(workload.metadata.name)$
+        spec:
+          containers:
+            - image: $(images.image.image)$
+              name: $(workload.metadata.name)$
