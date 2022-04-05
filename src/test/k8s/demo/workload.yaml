@@ -6,6 +6,5 @@ metadata:
     app.tanzu.vmware.com/workload-type: web
 spec:
   serviceAccountName: admin
-  params:
-    - name: image_prefix
-      value: localhost:5000/apps/
+  source:
+    image: localhost:5000/apps/demo

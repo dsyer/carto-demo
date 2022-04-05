@@ -145,9 +145,6 @@ spec:
       templateRef:
         kind: ClusterImageTemplate
         name: image
-      params:
-        - name: image_prefix
-          default: localhost:5000/apps/
 
     - name: deployer
       templateRef:
@@ -160,10 +157,10 @@ spec:
 
 It has a selector matching the label in our workload, and 2 resources, one each of 
 
-* A `ClusterImageTemplate` named `image`. This creates an `image`, which is the source of an image path for the deployment.
-* A `ClusterTemplate` named `deployment`. This creates a deployment for the image. It has a reference back to the image via the resource identifier and the name of a reference `imagePath` in the template, which in turn directs to a field in the actual `image`.
+* A resource named `image-builder` which is a `ClusterImageTemplate` named `image`. This creates an `image`, which is the source of an image path for the deployment.
+* A resource named `deployer` which is a `ClusterTemplate` named `deployment`. This creates a deployment for the image. It has a reference back to the image via the resource identifier and the name of a reference `imagePath` in the template, which in turn directs to a field in the actual `image`.
 
-The templates are defined in `src/test/k8s/demo/admin/*-template.yaml`. You can apply thos along with the other admin resources:
+The templates are defined in `src/test/k8s/demo/admin/*-template.yaml` and will typically be created by an admin or architect - they are shared between applications. You can apply those along with the other admin resources:
 
 ```
 $ kubectl apply -f admin
