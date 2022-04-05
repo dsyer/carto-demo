@@ -178,6 +178,63 @@ NAME           READY   REASON   AGE
 supply-chain   True    Ready    16h
 ```
 
+### The Image Template
+
+The template that produces image resources is as simple as it could be
+
+```yaml
+apiVersion: carto.run/v1alpha1
+kind: ClusterImageTemplate
+metadata:
+  name: image
+spec:
+  imagePath: .status.latestImage
+
+  template:
+    apiVersion: example.com/v1
+    kind: Image
+    metadata:
+      name: $(workload.metadata.name)$
+    spec:
+      image: $(workload.spec.source.image)$
+```
+
+It instructs cartographer to create an image with a parameterized name and image location, and then look for a field called `.status.latestImage` in the result, exposing that as the `image` property of the resource.
+
+### The Deployment Template
+
+This is also as simple as it gets. There are no ports exposed. No env vars. Nothing except a name and an image path to configure:
+
+```yaml
+apiVersion: carto.run/v1alpha1
+kind: ClusterTemplate
+metadata:
+  name: deployment
+spec:
+  template:
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: $(workload.metadata.name)$
+      labels:
+        app: $(workload.metadata.name)$
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: $(workload.metadata.name)$
+      template:
+        metadata:
+          labels:
+            app: $(workload.metadata.name)$
+        spec:
+          containers:
+            - image: $(images.image.image)$
+              name: $(workload.metadata.name)$
+```
+
+You can see a `template` which is a standard `apps/deployment`. In the template the `workload.metadata.name` is used to provide labels and names of things. All supply chains have an output property `images` that we are using to pull out the image path for the deployment. Because of the way the supply chain was defined `images` has only one element, and its name is `image`. That element has an `image` property because its template had a `spec.imagePath`.
+
 ### See it Working
 
 Apply the workload resource and see what happens:
