@@ -31,6 +31,11 @@ public class V1ImageSpec {
 	@SerializedName(SERIALIZED_NAME_IMAGE)
 	private String image;
 
+	public static final String SERIALIZED_NAME_INTERVAL = "interval";
+
+	@SerializedName(SERIALIZED_NAME_INTERVAL)
+	private String interval;
+
 	public V1ImageSpec url(String image) {
 
 		this.image = image;
@@ -49,6 +54,16 @@ public class V1ImageSpec {
 
 	public void setImage(String image) {
 		this.image = image;
+	}
+
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
+	public String getInterval() {
+		return interval;
+	}
+
+	public void setInterval(String interval) {
+		this.interval = interval;
 	}
 
 	@Override

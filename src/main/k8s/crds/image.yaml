@@ -42,6 +42,10 @@ spec:
             description: ImageSpec defines the desired state of Image
             properties:
               image:
+                description: A registry image path, e.g. "nginx" or "gcr.io/my-project/app"
+                type: string
+              interval:
+                description: The interval at which to check for repository updates, e.g. "30s" or "1m30s".
                 type: string
             type: object
           status:

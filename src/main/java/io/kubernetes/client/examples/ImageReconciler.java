@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.MediaType;
@@ -58,7 +59,7 @@ class ImageReconciler implements Reconciler {
 
             result = reconcile(parent);
             if (result.isRequeue()) {
-                result.setRequeueAfter(Duration.ofSeconds(10));
+                result.setRequeueAfter(config.computeInterval(parent.getSpec().getInterval()));
             }
 
             GroupVersion gv = GroupVersion.parse(parent);
@@ -76,6 +77,10 @@ class ImageReconciler implements Reconciler {
         }
 
         return result;
+    }
+
+    private Duration getDuration(V1Image parent) {
+        return config.computeInterval(parent.getSpec().getInterval());
     }
 
     private Result reconcile(V1Image parent) {

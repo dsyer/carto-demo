@@ -2,6 +2,8 @@ package io.kubernetes.client.examples;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.util.TestPropertyValues;
@@ -48,5 +50,26 @@ class ImagePropertiesTests {
     void testLocalhostInCluster() {
         TestPropertyValues.of("spring.main.cloud-platform=kubernetes").applyTo(environment);
         assertThat(config.computeManifestUrl("localhost:5000/apps/demo")).isEqualTo("http://registry:5000/v2/apps/demo/manifests/latest");
+    }
+
+    @Test
+    void testDefaultDuration() {
+        assertThat(config.computeInterval(null)).isEqualTo(Duration.ofSeconds(30));
+    }
+
+    @Test
+    void testOverrideDefaultDuration() {
+        config.setInterval(Duration.ofSeconds(20));
+        assertThat(config.computeInterval(null)).isEqualTo(Duration.ofSeconds(20));
+    }
+
+    @Test
+    void testSpecificDurationSeconds() {
+        assertThat(config.computeInterval("10s")).isEqualTo(Duration.ofSeconds(10));
+    }
+
+    @Test
+    void testSpecificDurationMinutesAndSeconds() {
+        assertThat(config.computeInterval("1m30s")).isEqualTo(Duration.ofSeconds(90));
     }
 }
