@@ -1,6 +1,9 @@
 package io.kubernetes.client.examples;
 
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +57,9 @@ class ImageReconciler implements Reconciler {
             }
 
             result = reconcile(parent);
+            if (result.isRequeue()) {
+                result.setRequeueAfter(Duration.ofSeconds(10));
+            }
 
             GroupVersion gv = GroupVersion.parse(parent);
             @SuppressWarnings("unchecked")
@@ -84,7 +90,7 @@ class ImageReconciler implements Reconciler {
         } else {
             next = old;
         }
-        return new Result(old != null && !old.equals(next));
+        return new Result(next!=null);
     }
 
     private String fetchImage(V1Image node) {
@@ -94,10 +100,6 @@ class ImageReconciler implements Reconciler {
         }
         try {
             String image = node.getSpec().getImage();
-            if (!image.contains("/")) {
-                log.error("image path has no /");
-                return null;
-            }
             String url = this.config.computeManifestUrl(image);
             log.info("Checking digest for: " + url);
             ResponseEntity<Manifest> response = rest.exchange(RequestEntity.get(url)

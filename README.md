@@ -222,4 +222,30 @@ workload.carto.run/demo            supply-chain   True    Ready    83s
 
 Awesome.
 
-> TODO: monitor the registry for changes in the image.
+## Monitoring Image Changes
+
+Image changes are detected by simply requeuing the reconciliation request (every 10 seconds). So you should see that happening in the controller logs:
+
+```
+2022-04-05 09:35:15.669  INFO 1882354 --- [ageController-1] i.k.client.examples.ImageReconciler      : Checking digest for: http://localhost:5000/v2/apps/demo/manifests/latest
+2022-04-05 09:35:25.689  INFO 1882354 --- [ageController-2] i.k.client.examples.ImageReconciler      : Checking digest for: http://localhost:5000/v2/apps/demo/manifests/latest
+2022-04-05 09:35:35.717  INFO 1882354 --- [ageController-1] i.k.client.examples.ImageReconciler      : Checking digest for: http://localhost:5000/v2/apps/demo/manifests/latest
+...
+```
+
+If you actually change the image contents, e.g. 
+
+```
+$ docker tag nginx localhost:5000/apps/demo
+$ docker push localhost:5000/apps/demo
+```
+
+then it will show up in the image resource as a change in the digest:
+
+```
+$ kubectl get images.example.com
+NAME   IMAGE                      LATEST
+demo   localhost:5000/apps/demo   localhost:5000/apps/demo@sha256:83d487b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6
+```
+
+and a new replicaset as the deployment is updated.

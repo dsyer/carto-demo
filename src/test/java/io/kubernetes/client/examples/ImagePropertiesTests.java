@@ -35,6 +35,11 @@ class ImagePropertiesTests {
     }
 
     @Test
+    void testLibrary() {
+        assertThat(config.computeManifestUrl("ubuntu")).isEqualTo("https://index.docker.io/v2/library/ubuntu/manifests/latest");
+    }
+
+    @Test
     void testLocalhost() {
         assertThat(config.computeManifestUrl("localhost:5000/apps/demo")).isEqualTo("http://localhost:5000/v2/apps/demo/manifests/latest");
     }

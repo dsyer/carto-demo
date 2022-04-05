@@ -13,6 +13,9 @@ public class ImageProperties implements EnvironmentAware {
     public String computeManifestUrl(String image) {
         String label = "latest"; // TODO: extract from image path
         String protocol = "https://";
+        if (!image.contains("/")) {
+            image = "library/" + image;
+        }
         if (!image.contains(".") && !image.contains(":")) {
             // No host
             image = "index.docker.io/" + image;
