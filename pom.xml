@@ -89,6 +89,7 @@
 						<env>
 							<BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
 						</env>
+						<name>localhost:5000/apps/controller</name>
 					</image>
 				</configuration>
 			</plugin>
