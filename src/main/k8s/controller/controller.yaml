@@ -127,8 +127,6 @@ spec:
       containers:
       - args:
         - --metrics-addr=127.0.0.1:8080
-        command:
-        - /manager
         image: localhost:5000/apps/controller
         name: manager
         resources:

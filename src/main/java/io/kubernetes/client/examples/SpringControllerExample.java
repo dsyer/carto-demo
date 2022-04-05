@@ -28,8 +28,6 @@ import org.springframework.nativex.hint.TypeHint;
 
 import io.kubernetes.client.examples.models.V1Image;
 import io.kubernetes.client.examples.models.V1ImageList;
-import io.kubernetes.client.examples.models.V1ImageSpec;
-import io.kubernetes.client.examples.models.V1ImageStatus;
 import io.kubernetes.client.extended.controller.Controller;
 import io.kubernetes.client.extended.controller.builder.ControllerBuilder;
 import io.kubernetes.client.informer.SharedIndexInformer;
@@ -37,7 +35,7 @@ import io.kubernetes.client.informer.SharedInformerFactory;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
 
-@TypeHint(types = { Manifest.class, V1Image.class, V1ImageList.class, V1ImageSpec.class, V1ImageStatus.class }, access = { TypeAccess.DECLARED_FIELDS,
+@TypeHint(types = { Manifest.class }, access = { TypeAccess.DECLARED_FIELDS,
 		TypeAccess.DECLARED_METHODS, TypeAccess.DECLARED_CONSTRUCTORS,
 		TypeAccess.DECLARED_CLASSES })
 @SpringBootApplication

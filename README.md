@@ -268,7 +268,7 @@ Spec:
   Image:  localhost:5000/apps/demo
 Status:
   Complete:      true
-  Latest Image:  localhost:5000/apps/demo@sha256:2ecba98b9f60ac24d12a90b42e836104b97563337872991280c983ada26199d3
+  Latest Image:  localhost:5000/apps/demo@sha256:72defb0353f4fb7a3869a2b89d92fbc3b6a99b48d1b960bba092fa3c8d093eed
 Events:          <none>
 ```
 
@@ -320,7 +320,7 @@ NAME   IMAGE                      LATEST
 demo   localhost:5000/apps/demo   localhost:5000/apps/demo@sha256:83d487b625d8c7818044c04f1b48aabccd3f51c3341fc300926846bca0c439e6
 ```
 
-and a new replicaset as the deployment is updated.
+and a new replicaset is created as the deployment is updated.
 
 ## Building and Deploying in the Cluster
 
