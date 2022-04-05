@@ -349,4 +349,17 @@ and deploy the controller:
 
 ```
 $ kubectl apply -f src/main/k8s/controller/
+$ kubectl describe pod --namespace spring-system 
+...
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  7m26s  default-scheduler  Successfully assigned spring-system/spring-controller-manager-6c48bb6658-7vgdz to kind-control-plane
+  Normal  Pulling    7m25s  kubelet            Pulling image "localhost:5000/apps/controller"
+  Normal  Pulled     7m25s  kubelet            Successfully pulled image "localhost:5000/apps/controller" in 70.492849ms
+  Normal  Created    7m25s  kubelet            Created container manager
+  Normal  Started    7m25s  kubelet            Started container manager
+  Normal  Pulled     7m25s  kubelet            Container image "gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0" already present on machine
+  Normal  Created    7m25s  kubelet            Created container kube-rbac-proxy
+  Normal  Started    7m25s  kubelet            Started container kube-rbac-proxy
 ```
