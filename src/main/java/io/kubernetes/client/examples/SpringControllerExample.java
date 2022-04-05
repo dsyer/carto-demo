@@ -31,18 +31,22 @@ import org.springframework.nativex.hint.TypeHint;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import io.kubernetes.client.apimachinery.GroupVersion;
+import io.kubernetes.client.common.KubernetesListObject;
 import io.kubernetes.client.examples.models.V1Image;
 import io.kubernetes.client.examples.models.V1ImageList;
 import io.kubernetes.client.examples.models.V1ImageStatus;
-import io.kubernetes.client.examples.reconciler.ParentReconciler;
-import io.kubernetes.client.examples.reconciler.SubReconciler;
 import io.kubernetes.client.extended.controller.Controller;
 import io.kubernetes.client.extended.controller.builder.ControllerBuilder;
+import io.kubernetes.client.extended.controller.reconciler.Reconciler;
+import io.kubernetes.client.extended.controller.reconciler.Request;
 import io.kubernetes.client.extended.controller.reconciler.Result;
 import io.kubernetes.client.informer.SharedIndexInformer;
 import io.kubernetes.client.informer.SharedInformerFactory;
+import io.kubernetes.client.informer.cache.Lister;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
+import io.kubernetes.client.util.generic.KubernetesApiResponse;
 
 @TypeHint(types = { Manifest.class }, access = { TypeAccess.DECLARED_FIELDS,
 		TypeAccess.DECLARED_METHODS, TypeAccess.DECLARED_CONSTRUCTORS,
@@ -72,7 +76,7 @@ public class SpringControllerExample {
 
 		@Bean
 		public Controller nodePrintingController(SharedInformerFactory sharedInformerFactory,
-				ParentReconciler<?, ?> reconciler) {
+				ImageReconciler reconciler) {
 			var builder = ControllerBuilder //
 					.defaultBuilder(sharedInformerFactory)//
 					.watch((q) -> ControllerBuilder.controllerWatchBuilder(V1Image.class, q)
@@ -95,22 +99,63 @@ public class SpringControllerExample {
 		}
 
 		@Bean
-		public ParentReconciler<V1Image, V1ImageList> configClientReconciler(
+		public ImageReconciler imageReconciler(
 				SharedIndexInformer<V1Image> parentInformer, ApiClient imageApi) {
 			if (log.isDebugEnabled()) {
 				imageApi.setDebugging(true);
 			}
-			return new ParentReconciler<>(parentInformer, imageApi, new ImageReconciler());
+			return new ImageReconciler(parentInformer, imageApi);
 		}
 
 	}
 
-	private static class ImageReconciler implements SubReconciler<V1Image> {
+	private static class ImageReconciler implements Reconciler {
 
 		private static Log log = LogFactory.getLog(ImageReconciler.class);
 
+		private SharedIndexInformer<V1Image> parentInformer;
+	
+		private ApiClient api;
+	
+		private String pluralName = "images";
+	
+		public ImageReconciler(SharedIndexInformer<V1Image> parentInformer, ApiClient imageApi) {
+			this.parentInformer = parentInformer;
+			this.api = imageApi;
+		}
+
 		@Override
-		public Result reconcile(V1Image parent) {
+		public Result reconcile(Request request) {
+			Lister<V1Image> parentLister = new Lister<>(parentInformer.getIndexer(), request.getNamespace());
+			V1Image parent = parentLister.get(request.getName());
+	
+			Result result = new Result(false);
+			if (parent != null) {
+	
+				if (parent.getMetadata().getDeletionTimestamp() != null) {
+					return result;
+				}
+	
+				result = reconcile(parent);
+	
+				GroupVersion gv = GroupVersion.parse(parent);
+				@SuppressWarnings("unchecked")
+				Class<V1Image> apiType = (Class<V1Image>) parent.getClass();
+				GenericKubernetesApi<V1Image, ?> status = new GenericKubernetesApi<>(apiType, KubernetesListObject.class,
+						gv.getGroup(), gv.getVersion(), pluralName, this.api);
+	
+				// TODO: make this conditional on the status having changed
+				KubernetesApiResponse<V1Image> update = status.updateStatus(parent, obj -> obj.getStatus());
+				if (!update.isSuccess()) {
+					log.warn("Cannot update parent");
+				}
+	
+			}
+	
+			return result;
+		}
+
+		private Result reconcile(V1Image parent) {
 			String old = parent == null || parent.getStatus() == null ? null : parent.getStatus().getLatestImage();
 			String next = fetchImage(parent);
 			if (next != null && parent != null) {
@@ -160,5 +205,4 @@ public class SpringControllerExample {
 }
 
 class Manifest extends HashMap<String, Object> {
-
 }
