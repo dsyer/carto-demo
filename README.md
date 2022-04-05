@@ -1,6 +1,6 @@
 # Simple Supply Chain with Cartographer
 
-The aim is to create a supply chain that makes k8s deployments from pre-built images. The simplest way that could possibly work would be with a hard-coded image in the workload. To make it slightly more interesting we want to monitor the image repository and update the deployment if the image changes. There is an closed source Tanzu [source-controller](https://github.com/vmware-tanzu/source-controller) that meets that need but it doesn't work with a local registry set up in the simplest way. Instead we use a custom controller written as a Spring Boot application with source code in this repository.
+The aim is to create a supply chain that makes k8s deployments from pre-built images. The simplest way that could possibly work would be with a hard-coded image in the workload. To make it slightly more interesting we want to monitor the image repository and update the deployment if the image changes. There is an closed source Tanzu [source-controller](https://github.com/vmware-tanzu/source-controller) that meets that need but it doesn't work with an insecure local registry. Instead we use a custom controller written as a Spring Boot application with source code in this repository.
 
 ## Setting up a Cluster
 
@@ -22,10 +22,22 @@ $ curl localhost:5000/v2/
 We also put an application in the repo with docker push. It doesn't matter what it does because it's only there so we can see something wiggle. E.g.
 
 ```
-$ docker pull nginx
-$ docker tag nginx localhost:5000/apps/demo
+$ docker pull nginx:stable-alpine
+$ docker tag nginx:stable-alpine localhost:5000/apps/demo
 $ docker push localhost:5000/apps/demo
 ```
+
+## Installing Cartographer
+
+Follow the instructions to [install Cartographer](https://github.com/vmware-tanzu/cartographer/blob/main/README.md#installation):
+
+```
+$ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.2/cert-manager.yaml
+$ kubectl create namespace cartographer-system
+$ kubectl apply -f https://github.com/vmware-tanzu/cartographer/releases/latest/download/cartographer.yaml
+```
+
+Keep running the last one until it is successful.
 
 ## Installing the Image Controller
 
@@ -86,6 +98,28 @@ spec:
 The two things any workload really needs are a label, which matches a supply-chain, and an image location, so that it can kick things off. The image name is constructed by the supply chain from the prefix and the workload name. This workload is quite common in that it also needs a service account because it is going to manage two kinds of resource (images and deployments). 
 
 ## The Supply Chain
+
+You can install a sample supply chain and all its dependencies like this:
+
+```
+$ kubectl apply -f src/test/k8s/demo/admin/
+```
+
+If successful there should be a bunch of new resource types. E.g.
+
+```
+$ kubectl get clusterimagetemplates.carto.run 
+NAME             AGE
+image   39m
+
+$ kubectl get clustertemplates.carto.run 
+NAME         AGE
+deployment   16h
+
+$ kubectl get clustersupplychains.carto.run 
+NAME           READY   REASON   AGE
+supply-chain   True    Ready    16h
+```
 
 ### Service Account
 
@@ -160,23 +194,7 @@ It has a selector matching the label in our workload, and 2 resources, one each 
 * A resource named `image-builder` which is a `ClusterImageTemplate` named `image`. This creates an `image`, which is the source of an image path for the deployment.
 * A resource named `deployer` which is a `ClusterTemplate` named `deployment`. This creates a deployment for the image. It has a reference back to the image via the resource identifier and the name of a reference `imagePath` in the template, which in turn directs to a field in the actual `image`.
 
-The templates are defined in `src/test/k8s/demo/admin/*-template.yaml` and will typically be created by an admin or architect - they are shared between applications. You can apply those along with the other admin resources:
-
-```
-$ kubectl apply -f admin
-
-$ kubectl get clusterimagetemplates.carto.run 
-NAME             AGE
-image   39m
-
-$ kubectl get clustertemplates.carto.run 
-NAME         AGE
-deployment   16h
-
-$ kubectl get clustersupplychains.carto.run 
-NAME           READY   REASON   AGE
-supply-chain   True    Ready    16h
-```
+The templates are defined in `src/test/k8s/demo/admin/*-template.yaml` and will typically be created by an admin or architect - they are shared between applications.
 
 ### The Image Template
 
@@ -303,3 +321,32 @@ demo   localhost:5000/apps/demo   localhost:5000/apps/demo@sha256:83d487b625d8c7
 ```
 
 and a new replicaset as the deployment is updated.
+
+## Building and Deploying in the Cluster
+
+For "real" use cases you would want to run the controller in the cluster. So build an image:
+
+```
+$ ./mvnw spring-boot:build-image
+...
+[INFO] Successfully built image 'localhost:5000/apps/controller:latest'
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  05:56 min
+[INFO] Finished at: 2022-04-05T16:01:59+01:00
+[INFO] ------------------------------------------------------------------------
+```
+
+Create the RBAC rules:
+
+```
+$ kubectl apply -f src/main/k8s/rbac/roles.yaml
+```
+
+and deploy the controller:
+
+```
+$ kubectl apply -f src/main/k8s/controller/
+```

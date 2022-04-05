@@ -129,7 +129,7 @@ spec:
         - --metrics-addr=127.0.0.1:8080
         command:
         - /manager
-        image: dsyer/spring-config-operator:latest
+        image: localhost:5000/apps/controller
         name: manager
         resources:
           limits:

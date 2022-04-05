@@ -85,10 +85,10 @@
 				<configuration>
 					<classifier>${repackage.classifier}</classifier>
 					<image>
-						<builder>paketobuildpacks/builder:tiny</builder>
+						<!--builder>paketobuildpacks/builder:tiny</builder>
 						<env>
 							<BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
-						</env>
+						</env-->
 						<name>localhost:5000/apps/controller</name>
 					</image>
 				</configuration>
