@@ -120,17 +120,13 @@
 			</snapshots>
 			<id>central</id>
 			<name>libs-release</name>
-			<url>
-                https://cloudnativejava.jfrog.io/cloudnativejava/libs-release
-            </url>
+			<url>https://cloudnativejava.jfrog.io/cloudnativejava/libs-release</url>
 		</repository>
 		<repository>
 			<snapshots />
 			<id>snapshots</id>
 			<name>libs-snapshot</name>
-			<url>
-                https://cloudnativejava.jfrog.io/cloudnativejava/libs-snapshot
-            </url>
+			<url>https://cloudnativejava.jfrog.io/cloudnativejava/libs-snapshot</url>
 		</repository>
 	</repositories>
 	<pluginRepositories>
@@ -140,20 +136,45 @@
 			</snapshots>
 			<id>central</id>
 			<name>plugins-release</name>
-			<url>
-                https://cloudnativejava.jfrog.io/cloudnativejava/plugins-release
-            </url>
+			<url>https://cloudnativejava.jfrog.io/cloudnativejava/plugins-release</url>
 		</pluginRepository>
 		<pluginRepository>
 			<snapshots />
 			<id>snapshots</id>
 			<name>plugins-snapshot</name>
-			<url>
-                https://cloudnativejava.jfrog.io/cloudnativejava/plugins-snapshot
-            </url>
+			<url>https://cloudnativejava.jfrog.io/cloudnativejava/plugins-snapshot</url>
 		</pluginRepository>
 	</pluginRepositories>
 	<profiles>
+		<profile>
+			<id>generator</id>
+			<activation>
+				<file>
+					<exists>target/k8s.json</exists>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.openapitools</groupId>
+						<artifactId>openapi-generator-maven-plugin</artifactId>
+						<version>5.4.0</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<inputSpec>target/k8s.json</inputSpec>
+									<generatorName>c</generatorName>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>native</id>
 			<properties>

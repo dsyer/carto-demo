@@ -251,7 +251,7 @@ spec:
               name: $(workload.metadata.name)$
 ```
 
-You can see a `template` which is a standard `apps/deployment`. In the template the `workload.metadata.name` is used to provide labels and names of things. All supply chains have an output property `images` that we are using to pull out the image path for the deployment. Because of the way the supply chain was defined `images` has only one element, and its name is `image`. That element has an `image` property because its template had a `spec.imagePath`.
+You can see a `template` which is a standard `apps/deployment`. In the template the `workload.metadata.name` is used to provide labels and names of things. All supply chains have an output property `images` that we are using to pull out the image path for the deployment. Because of the way the supply chain was defined `images` has only one element, and its name is `image`. That element is an [`ImageTemplate`](https://cartographer.sh/docs/v0.3.0/architecture/#templates) and its `spec.imagePath` output translates into an `image` input for other resources.
 
 ### See it Working
 
