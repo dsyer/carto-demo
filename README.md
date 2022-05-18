@@ -95,7 +95,7 @@ spec:
       value: localhost:5000/apps/
 ```
 
-The two things any workload really needs are a label, which matches a supply-chain, and an image location, so that it can kick things off. The image name is constructed by the supply chain from the prefix and the workload name. This workload is quite common in that it also needs a service account because it is going to manage two kinds of resource (images and deployments). 
+The two things any workload really needs are a label, which matches a supply-chain, and an image location, so that it can kick things off. The image name is constructed by the supply chain from the prefix and the workload name. This workload is quite common in that it also needs a service account because it is going to manage two kinds of resource (images and deployments).
 
 ## The Supply Chain
 
@@ -108,15 +108,15 @@ $ kubectl apply -f src/test/k8s/demo/admin/
 If successful there should be a bunch of new resource types. E.g.
 
 ```
-$ kubectl get clusterimagetemplates.carto.run 
+$ kubectl get clusterimagetemplates.carto.run
 NAME             AGE
 image   39m
 
-$ kubectl get clustertemplates.carto.run 
+$ kubectl get clustertemplates.carto.run
 NAME         AGE
 deployment   16h
 
-$ kubectl get clustersupplychains.carto.run 
+$ kubectl get clustersupplychains.carto.run
 NAME           READY   REASON   AGE
 supply-chain   True    Ready    16h
 ```
@@ -131,13 +131,13 @@ kind: Role
 metadata:
   name: admin-permissions
 rules:
-- apiGroups: ['apps', '']
-  resources: ['deployments', 'pods']
-  verbs: ['*']
-- apiGroups:
-  - example.com
-  resources: ['images']
-  verbs: ['*']
+  - apiGroups: ["apps", ""]
+    resources: ["deployments", "pods"]
+    verbs: ["*"]
+  - apiGroups:
+      - example.com
+    resources: ["images"]
+    verbs: ["*"]
 ```
 
 N.B. `example.com` is the API group for the custom controller. Those permssisions are bound to the `admin` account using a `RoleBinding`:
@@ -189,10 +189,10 @@ spec:
           name: image
 ```
 
-It has a selector matching the label in our workload, and 2 resources, one each of 
+It has a selector matching the label in our workload, and 2 resources, one each of
 
-* A resource named `image-builder` which is a `ClusterImageTemplate` named `image`. This creates an `image`, which is the source of an image path for the deployment.
-* A resource named `deployer` which is a `ClusterTemplate` named `deployment`. This creates a deployment for the image. It has a reference back to the image via the resource identifier and the name of a reference `imagePath` in the template, which in turn directs to a field in the actual `image`.
+- A resource named `image-builder` which is a `ClusterImageTemplate` named `image`. This creates an `image`, which is the source of an image path for the deployment.
+- A resource named `deployer` which is a `ClusterTemplate` named `deployment`. This creates a deployment for the image. It has a reference back to the image via the resource identifier and the name of a reference `imagePath` in the template, which in turn directs to a field in the actual `image`.
 
 The templates are defined in `src/test/k8s/demo/admin/*-template.yaml` and will typically be created by an admin or architect - they are shared between applications.
 
@@ -305,7 +305,7 @@ Image changes are detected by simply requeuing the reconciliation request (every
 ...
 ```
 
-If you actually change the image contents, e.g. 
+If you actually change the image contents, e.g.
 
 ```
 $ docker tag nginx localhost:5000/apps/demo
@@ -330,7 +330,7 @@ For "real" use cases you would want to run the controller in the cluster. So bui
 $ ./mvnw spring-boot:build-image
 ...
 [INFO] Successfully built image 'localhost:5000/apps/controller:latest'
-[INFO] 
+[INFO]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
@@ -349,7 +349,7 @@ and deploy the controller:
 
 ```
 $ kubectl apply -f src/main/k8s/controller/
-$ kubectl describe pod --namespace spring-system 
+$ kubectl describe pod --namespace spring-system
 ...
 Events:
   Type    Reason     Age    From               Message
@@ -419,10 +419,9 @@ We can use the OpenAPI Maven plugin for generating Java code (or Rust or C etc.)
 
 ```
 $ mvn generate-sources -P generator-java
-$ cp -rf target/openapi/src/main/java/io/kubernetes/client/examples/models src/main/java/io/kubernetes/client/examples
 ```
 
-Configuration for the plugin is copied from the Kubernetes Client source code.
+Configuration for the plugin is copied from the Kubernetes Client source code. Here is the configuration behind the `generator-java` profile:
 
 ```xml
 <properties>
@@ -469,6 +468,29 @@ Configuration for the plugin is copied from the Kubernetes Client source code.
 				<typeMappings>int-or-string=IntOrString,quantity=Quantity,patch=V1Patch</typeMappings>
 				<importMappings>IntOrString=io.kubernetes.client.custom.IntOrString,Quantity=io.kubernetes.client.custom.Quantity,V1Patch=io.kubernetes.client.custom.V1Patch</importMappings>
 			</configuration>
+		</plugin>
+		<plugin>
+			<artifactId>maven-resources-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>copy-resources</id>
+					<phase>generate-sources</phase>
+					<goals>
+						<goal>copy-resources</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>${basedir}/src/main/java/io/kubernetes/client/examples/models</outputDirectory>
+						<resources>
+							<resource>
+								<directory>${basedir}/target/openapi/src/main/java/io/kubernetes/client/examples/models</directory>
+								<includes>
+									<include>*.java</include>
+								</includes>
+							</resource>
+						</resources>
+					</configuration>
+				</execution>
+			</executions>
 		</plugin>
 	</plugins>
 </build>
