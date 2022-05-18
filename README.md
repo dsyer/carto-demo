@@ -403,7 +403,7 @@ $ tar -tzvf k8s-wasm.tgz | grep com_example
 -rw-r--r-- dsyer/dsyer    1367 2022-04-28 10:15 include/k8s/com_example_v1_image.h
 ```
 
-### Generating Code from Just the CRDs
+### Preprocessing the OpenAPI Spec
 
 The [Kubernetes Client](https://github.com/kubernetes-client/java) has a documented process for generating Java bindings to the CRDs. It involves pre-processing the JSON OpenAPI spec with python. We can do the same for our relatively simple use case using `jq`:
 
@@ -413,7 +413,72 @@ $ jq -s '.[0] + {definitions:.[1]} + {paths:{}}' <(jq 'with_entries(select([.key
 $ sed -e 's,#/definitions/io.k8s.apimachinery.pkg.apis.meta.,#/definitions/,' -e 's,#/definitions/com.example.,#/definitions/,' target/k8s-tmp.json > target/k8s.json
 ```
 
-Then we need the Java version of the `pom.xml` from the generator:
+### Generating Code from Just the CRDs
+
+We can use the OpenAPI Maven plugin for generating Java code (or Rust or C etc.) from the CRDs. With `target/k8s.json` prepared as above:
+
+```
+$ mvn generate-sources -P generator-java
+$ cp -rf target/openapi/src/main/java/io/kubernetes/client/examples/models src/main/java/io/kubernetes/client/examples
+```
+
+Configuration for the plugin is copied from the Kubernetes Client source code.
+
+```xml
+<properties>
+	<generator.package.name>io.kubernetes.client.examples</generator.package.name>
+	<generator.client.version>${project.version}</generator.client.version>
+</properties>
+<build>
+	<plugins>
+		<plugin>
+			<groupId>org.openapitools</groupId>
+			<artifactId>openapi-generator-maven-plugin</artifactId>
+			<configuration>
+				<output>target/openapi</output>
+				<generatorName>java</generatorName>
+				<generateModelDocumentation>false</generateModelDocumentation>
+				<importMappings>
+					io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta=io.kubernetes.client.openapi.models.V1ListMeta,
+					V1ObjectMeta=io.kubernetes.client.openapi.models.V1ObjectMeta,
+					IntOrString=io.kubernetes.client.custom.IntOrString,
+					Quantity=io.kubernetes.client.custom.Quantity,
+					V1Patch=io.kubernetes.client.custom.V1Patch,
+					V1DeleteOptions=io.kubernetes.client.openapi.models.V1DeleteOptions,
+					V1Status=io.kubernetes.client.openapi.models.V1Status,
+					V1Scale=io.kubernetes.client.openapi.models.V1Scale,
+				</importMappings>
+				<skipValidateSpec>true</skipValidateSpec>
+				<generateApiTests>false</generateApiTests>
+				<generateModelTests>false</generateModelTests>
+				<configOptions>
+					<invokerPackage>io.kubernetes.client.openapi</invokerPackage>
+					<modelPackage>${generator.package.name}.models</modelPackage>
+					<apiPackage>${generator.package.name}.apis</apiPackage>
+					<invokerPackage>${generator.package.name}</invokerPackage>
+					<ensureUniqueParams>true</ensureUniqueParams>
+					<serializableModel>false</serializableModel>
+					<bigDecimalAsString>false</bigDecimalAsString>
+					<fullJavaUtil>false</fullJavaUtil>
+					<hideGenerationTimestamp>true</hideGenerationTimestamp>
+					<dateLibrary>java8</dateLibrary>
+					<useRxJava>false</useRxJava>
+					<library>rest-assured</library>
+					<useReflectionEqualsHashCode>false</useReflectionEqualsHashCode>
+				</configOptions>
+				<typeMappings>int-or-string=IntOrString,quantity=Quantity,patch=V1Patch</typeMappings>
+				<importMappings>IntOrString=io.kubernetes.client.custom.IntOrString,Quantity=io.kubernetes.client.custom.Quantity,V1Patch=io.kubernetes.client.custom.V1Patch</importMappings>
+			</configuration>
+		</plugin>
+	</plugins>
+</build>
+```
+
+> N.B. the `library=rest-assured` has no direct impact on the generated code (no client is needed), but there is a [bug in the generator](https://github.com/OpenAPITools/openapi-generator/issues/12391) that makes it fail with the more obvious choice of `native`. Choosing `rest-assured` has a side effect of forcing the JSON serializer to GSON.
+
+### Manual Code Generation with Kubernetes Client
+
+We need the Java version of the `pom.xml` from the generator:
 
 ```
 $ mkdir -p target/openapi
@@ -432,8 +497,6 @@ Finally we can create the code and copy the bits we care about back into the mai
 $ (cd target/openapi; LIBRARY=rest-assured OPENAPI_SKIP_BASE_INTERFACE=true KUBERNETES_CRD_MODE=true mvn -Dgenerator.spec.path=k8s.json -D=generator.client.version=0.0.1 -D=generator.package.name=io.kubernetes.client.examples -D=openapi-generator-version=6.0.0-beta generate-sources)
 $ cp -rf target/openapi/src/main/java/io/kubernetes/client/examples/models src/main/java/io/kubernetes/client/examples
 ```
-
-> N.B. the `LIBRARY=rest-assured` has no direct impact on the generated code (no client is needed), but there is a [bug in the generator](https://github.com/OpenAPITools/openapi-generator/issues/12391) that makes it fail with the more obvious choice of `native`. Choosing `rest-assured` has a side effect of forcing the JSON serializer to GSON.
 
 ### Docker in Docker and Kind
 

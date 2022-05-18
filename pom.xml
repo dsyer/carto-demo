@@ -8,16 +8,17 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>org.example</groupId>
+	<groupId>com.example</groupId>
 	<version>0.0.1-SNAPSHOT</version>
 	<artifactId>spring-controller</artifactId>
 	<name>spring-controller</name>
 
 	<properties>
 		<java.version>11</java.version>
-		<repackage.classifier />
+		<repackage.classifier>exec</repackage.classifier>
 		<spring-native.version>0.11.3</spring-native.version>
 		<testcontainers.version>1.16.2</testcontainers.version>
+		<openapi-generator-version>6.0.0-beta</openapi-generator-version>
 		<skip-its>true</skip-its>
 	</properties>
 	<dependencies>
@@ -112,6 +113,25 @@
 				<version>0.0.29</version>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.openapitools</groupId>
+					<artifactId>openapi-generator-maven-plugin</artifactId>
+					<version>${openapi-generator-version}</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>generate</goal>
+							</goals>
+							<configuration>
+								<inputSpec>target/k8s.json</inputSpec>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 	<repositories>
 		<repository>
@@ -147,31 +167,107 @@
 	</pluginRepositories>
 	<profiles>
 		<profile>
-			<id>generator</id>
+			<id>generator-c</id>
 			<activation>
 				<file>
 					<exists>target/k8s.json</exists>
 				</file>
+				<property>
+					<name>openapi.generate.c</name>
+					<value>true</value>
+				</property>
 			</activation>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.openapitools</groupId>
 						<artifactId>openapi-generator-maven-plugin</artifactId>
-						<version>6.0.0-beta</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>generate</goal>
-								</goals>
-								<configuration>
-									<inputSpec>target/k8s.json</inputSpec>
-									<generatorName>c</generatorName>
-								</configuration>
-							</execution>
-						</executions>
+						<configuration>
+							<generatorName>c</generatorName>
+						</configuration>
 					</plugin>
-
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>generator-rust</id>
+			<activation>
+				<file>
+					<exists>target/k8s.json</exists>
+				</file>
+				<property>
+					<name>openapi.generate.rust</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.openapitools</groupId>
+						<artifactId>openapi-generator-maven-plugin</artifactId>
+						<configuration>
+							<generatorName>rust</generatorName>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>generator-java</id>
+			<activation>
+				<file>
+					<exists>target/k8s.json</exists>
+				</file>
+				<property>
+					<name>openapi.generate.java</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<properties>
+				<generator.package.name>io.kubernetes.client.examples</generator.package.name>
+				<generator.client.version>${project.version}</generator.client.version>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.openapitools</groupId>
+						<artifactId>openapi-generator-maven-plugin</artifactId>
+						<configuration>
+							<output>target/openapi</output>
+							<generatorName>java</generatorName>
+							<generateModelDocumentation>false</generateModelDocumentation>
+							<importMappings>
+								io.k8s.apimachinery.pkg.apis.meta.v1.ListMeta=io.kubernetes.client.openapi.models.V1ListMeta,
+								V1ObjectMeta=io.kubernetes.client.openapi.models.V1ObjectMeta,
+								IntOrString=io.kubernetes.client.custom.IntOrString,
+								Quantity=io.kubernetes.client.custom.Quantity,
+								V1Patch=io.kubernetes.client.custom.V1Patch,
+								V1DeleteOptions=io.kubernetes.client.openapi.models.V1DeleteOptions,
+								V1Status=io.kubernetes.client.openapi.models.V1Status,
+								V1Scale=io.kubernetes.client.openapi.models.V1Scale,
+							</importMappings>
+							<skipValidateSpec>true</skipValidateSpec>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<configOptions>
+								<invokerPackage>io.kubernetes.client.openapi</invokerPackage>
+								<modelPackage>${generator.package.name}.models</modelPackage>
+								<apiPackage>${generator.package.name}.apis</apiPackage>
+								<invokerPackage>${generator.package.name}</invokerPackage>
+								<ensureUniqueParams>true</ensureUniqueParams>
+								<serializableModel>false</serializableModel>
+								<bigDecimalAsString>false</bigDecimalAsString>
+								<fullJavaUtil>false</fullJavaUtil>
+								<hideGenerationTimestamp>true</hideGenerationTimestamp>
+								<dateLibrary>java8</dateLibrary>
+								<useRxJava>false</useRxJava>
+								<library>rest-assured</library>
+								<useReflectionEqualsHashCode>false</useReflectionEqualsHashCode>
+							</configOptions>
+							<typeMappings>int-or-string=IntOrString,quantity=Quantity,patch=V1Patch</typeMappings>
+							<importMappings>IntOrString=io.kubernetes.client.custom.IntOrString,Quantity=io.kubernetes.client.custom.Quantity,V1Patch=io.kubernetes.client.custom.V1Patch</importMappings>
+						</configuration>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
@@ -190,7 +286,6 @@
 			</dependencies>
 			<build>
 				<plugins>
-
 					<plugin>
 						<groupId>org.graalvm.buildtools</groupId>
 						<artifactId>native-maven-plugin</artifactId>
