@@ -4,6 +4,7 @@ target/
 !**/src/main/**
 !**/src/test/**
 .github/workflows/fats
+.venv/
 
 ### STS ###
 .apt_generated

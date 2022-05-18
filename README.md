@@ -363,3 +363,83 @@ Events:
   Normal  Created    7m25s  kubelet            Created container kube-rbac-proxy
   Normal  Started    7m25s  kubelet            Started container kube-rbac-proxy
 ```
+
+## Generating OpenAPI Source Code
+
+From a cluster with all the CRDs:
+
+```
+$ kubectl get --raw /openapi/v2 | jq 'with_entries(select([.key] | inside(["definitions", "components", "info", "swagger", "openapi"]))) + {paths:{}}' > target/k8s.json
+```
+
+### Source code in C
+
+Generate the client code (a profile is activated by the JSON file above):
+
+```
+$ mvn install
+$ ls target/generated-sources/
+annotations  openapi
+```
+
+Then you can make a linkable library with `make` (or `emmake make` if you want a WASM):
+
+```
+$ make clean
+$ emmake make
+$ tar -tzvf k8s-wasm.tgz
+drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 include/
+drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 include/k8s/
+-rw-r--r-- dsyer/dsyer    1837 2022-04-28 10:15 include/k8s/io_k8s_api_certificates_v1beta1_certificate_signing_request_status.h
+...
+-rw-r--r-- dsyer/dsyer    2655 2022-04-28 10:15 include/k8s/io_k8s_api_admissionregistration_v1_validating_webhook.h
+-rw-r--r-- dsyer/dsyer    1762 2022-04-28 10:15 include/k8s/io_k8s_api_core_v1_probe.h
+drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 lib/
+-rw-r--r-- dsyer/dsyer    5190 2022-04-28 10:15 lib/libk8s.a
+$ tar -tzvf k8s-wasm.tgz | grep com_example
+-rw-r--r-- dsyer/dsyer     982 2022-04-28 10:15 include/k8s/com_example_v1_image_spec.h
+-rw-r--r-- dsyer/dsyer    1270 2022-04-28 10:15 include/k8s/com_example_v1_image_list.h
+-rw-r--r-- dsyer/dsyer    1103 2022-04-28 10:15 include/k8s/com_example_v1_image_status.h
+-rw-r--r-- dsyer/dsyer    1367 2022-04-28 10:15 include/k8s/com_example_v1_image.h
+```
+
+### Generating Code from Just the CRDs
+
+The [Kubernetes Client](https://github.com/kubernetes-client/java) has a documented process for generating Java bindings to the CRDs. It involves pre-processing the JSON OpenAPI spec with python. We can do the same for our relatively simple use case using `jq`:
+
+```
+$ cat target/k8s.json | jq '.definitions | with_entries( select(.key|startswith("com.example"))) | with_entries(.key|= sub("com.example.";""))'
+$ jq -s '.[0] + {definitions:.[1]} + {paths:{}}' <(jq 'with_entries(select([.key] | inside(["info", "swagger", "openapi"])))' target/k8s.json) <(jq '.definitions | with_entries( select(.key|startswith("com.example"))) | with_entries(.key|= sub("com.example.";"")) |with_entries(.value += {"x-implements":[if(.key|test(".*List.*")) then "io.kubernetes.client.common.KubernetesListObject" else "io.kubernetes.client.common.KubernetesObject" end]})' target/k8s.json ) > target/k8s-tmp.json
+$ sed -e 's,#/definitions/io.k8s.apimachinery.pkg.apis.meta.,#/definitions/,' -e 's,#/definitions/com.example.,#/definitions/,' target/k8s-tmp.json > target/k8s.json
+```
+
+Then we need the Java version of the `pom.xml` from the generator:
+
+```
+$ mkdir -p target/openapi
+$ curl https://raw.githubusercontent.com/kubernetes-client/gen/master/openapi/java.xml > target/openapi/pom.xml
+```
+
+and the JSON spec:
+
+```
+$ cp target/k8s.json target/openapi/
+```
+
+Finally we can create the code and copy the bits we care about back into the main project:
+
+```
+$ (cd target/openapi; LIBRARY=resttemplate OPENAPI_SKIP_BASE_INTERFACE=true KUBERNETES_CRD_MODE=true mvn -Dgenerator.spec.path=k8s.json -D=generator.client.version=0.0.1 -D=generator.package.name=io.kubernetes.client.examples -D=openapi-generator-version=6.0.0-beta generate-sources)
+$ cp -rf target/openapi/src/main/java/io/kubernetes/client/examples/models src/main/java/io/kubernetes/client/examples
+```
+
+> N.B. the `LIBRARY=resttemplate` has no impact on the generated code (no client is needed), but there is a [bug in the generator](https://github.com/OpenAPITools/openapi-generator/issues/12391) that makes it fail with the more obvious choice of `native`
+
+### Docker in Docker and Kind
+
+The official way (involving docker and kind) is much heavier and probably more fragile. You have to stop your kind cluster or it will complain, and then if it fails it doesn't clean up. The result is a bunch of generated files owned by `root` (which sucks). Anyway, here it is:
+
+```
+$ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd)":"$(pwd)" -ti --network host docker.pkg.github.com/kubernetes-client/java/crd-model-gen:v1.0.6 /generate.sh -u $(pwd)/src/main/k8s/crds/image.yaml -n com.example -p com.dsyer -o "$(pwd)"
+$ sudo chown -R dsyer:dsyer src/main/java/com/dsyer/
+```
