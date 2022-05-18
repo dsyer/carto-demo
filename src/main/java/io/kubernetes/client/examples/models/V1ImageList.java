@@ -17,10 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.gson.annotations.SerializedName;
 
 import io.kubernetes.client.openapi.models.V1ListMeta;
 import io.swagger.annotations.ApiModel;
@@ -30,25 +27,22 @@ import io.swagger.annotations.ApiModelProperty;
  * ImageList is a list of Image
  */
 @ApiModel(description = "ImageList is a list of Image")
-@JsonPropertyOrder({
-  V1ImageList.JSON_PROPERTY_API_VERSION,
-  V1ImageList.JSON_PROPERTY_ITEMS,
-  V1ImageList.JSON_PROPERTY_KIND,
-  V1ImageList.JSON_PROPERTY_METADATA
-})
-@JsonTypeName("v1.ImageList")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T09:42:11.039198+01:00[Europe/London]")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T10:06:44.759878+01:00[Europe/London]")
 public class V1ImageList implements io.kubernetes.client.common.KubernetesListObject {
-  public static final String JSON_PROPERTY_API_VERSION = "apiVersion";
+  public static final String SERIALIZED_NAME_API_VERSION = "apiVersion";
+  @SerializedName(SERIALIZED_NAME_API_VERSION)
   private String apiVersion;
 
-  public static final String JSON_PROPERTY_ITEMS = "items";
+  public static final String SERIALIZED_NAME_ITEMS = "items";
+  @SerializedName(SERIALIZED_NAME_ITEMS)
   private List<V1Image> items = new ArrayList<>();
 
-  public static final String JSON_PROPERTY_KIND = "kind";
+  public static final String SERIALIZED_NAME_KIND = "kind";
+  @SerializedName(SERIALIZED_NAME_KIND)
   private String kind;
 
-  public static final String JSON_PROPERTY_METADATA = "metadata";
+  public static final String SERIALIZED_NAME_METADATA = "metadata";
+  @SerializedName(SERIALIZED_NAME_METADATA)
   private V1ListMeta metadata = null;
 
   public V1ImageList() { 
@@ -66,16 +60,12 @@ public class V1ImageList implements io.kubernetes.client.common.KubernetesListOb
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources")
-  @JsonProperty(JSON_PROPERTY_API_VERSION)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public String getApiVersion() {
     return apiVersion;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_API_VERSION)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setApiVersion(String apiVersion) {
     this.apiVersion = apiVersion;
   }
@@ -98,16 +88,12 @@ public class V1ImageList implements io.kubernetes.client.common.KubernetesListOb
   **/
   @javax.annotation.Nonnull
   @ApiModelProperty(required = true, value = "List of images. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md")
-  @JsonProperty(JSON_PROPERTY_ITEMS)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
   public List<V1Image> getItems() {
     return items;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ITEMS)
-  @JsonInclude(value = JsonInclude.Include.ALWAYS)
   public void setItems(List<V1Image> items) {
     this.items = items;
   }
@@ -125,16 +111,12 @@ public class V1ImageList implements io.kubernetes.client.common.KubernetesListOb
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds")
-  @JsonProperty(JSON_PROPERTY_KIND)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public String getKind() {
     return kind;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_KIND)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setKind(String kind) {
     this.kind = kind;
   }
@@ -152,16 +134,12 @@ public class V1ImageList implements io.kubernetes.client.common.KubernetesListOb
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
-  @JsonProperty(JSON_PROPERTY_METADATA)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public V1ListMeta getMetadata() {
     return metadata;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_METADATA)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMetadata(V1ListMeta metadata) {
     this.metadata = metadata;
   }

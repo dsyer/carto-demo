@@ -15,10 +15,7 @@ package io.kubernetes.client.examples.models;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.gson.annotations.SerializedName;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -27,17 +24,14 @@ import io.swagger.annotations.ApiModelProperty;
  * ImageSpec defines the desired state of Image
  */
 @ApiModel(description = "ImageSpec defines the desired state of Image")
-@JsonPropertyOrder({
-  V1ImageSpec.JSON_PROPERTY_IMAGE,
-  V1ImageSpec.JSON_PROPERTY_INTERVAL
-})
-@JsonTypeName("v1_Image_spec")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T09:42:11.039198+01:00[Europe/London]")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T10:06:44.759878+01:00[Europe/London]")
 public class V1ImageSpec {
-  public static final String JSON_PROPERTY_IMAGE = "image";
+  public static final String SERIALIZED_NAME_IMAGE = "image";
+  @SerializedName(SERIALIZED_NAME_IMAGE)
   private String image;
 
-  public static final String JSON_PROPERTY_INTERVAL = "interval";
+  public static final String SERIALIZED_NAME_INTERVAL = "interval";
+  @SerializedName(SERIALIZED_NAME_INTERVAL)
   private String interval;
 
   public V1ImageSpec() { 
@@ -55,16 +49,12 @@ public class V1ImageSpec {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "A registry image path, e.g. \"nginx\" or \"gcr.io/my-project/app\"")
-  @JsonProperty(JSON_PROPERTY_IMAGE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public String getImage() {
     return image;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_IMAGE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setImage(String image) {
     this.image = image;
   }
@@ -82,16 +72,12 @@ public class V1ImageSpec {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "The interval at which to check for repository updates, e.g. \"30s\" or \"1m30s\".")
-  @JsonProperty(JSON_PROPERTY_INTERVAL)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public String getInterval() {
     return interval;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_INTERVAL)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setInterval(String interval) {
     this.interval = interval;
   }

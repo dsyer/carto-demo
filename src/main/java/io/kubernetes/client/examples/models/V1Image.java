@@ -15,10 +15,7 @@ package io.kubernetes.client.examples.models;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.gson.annotations.SerializedName;
 
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.swagger.annotations.ApiModel;
@@ -28,29 +25,26 @@ import io.swagger.annotations.ApiModelProperty;
  * Image is the Schema for the image API
  */
 @ApiModel(description = "Image is the Schema for the image API")
-@JsonPropertyOrder({
-  V1Image.JSON_PROPERTY_API_VERSION,
-  V1Image.JSON_PROPERTY_KIND,
-  V1Image.JSON_PROPERTY_METADATA,
-  V1Image.JSON_PROPERTY_SPEC,
-  V1Image.JSON_PROPERTY_STATUS
-})
-@JsonTypeName("v1.Image")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T09:42:11.039198+01:00[Europe/London]")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T10:06:44.759878+01:00[Europe/London]")
 public class V1Image implements io.kubernetes.client.common.KubernetesObject {
-  public static final String JSON_PROPERTY_API_VERSION = "apiVersion";
+  public static final String SERIALIZED_NAME_API_VERSION = "apiVersion";
+  @SerializedName(SERIALIZED_NAME_API_VERSION)
   private String apiVersion;
 
-  public static final String JSON_PROPERTY_KIND = "kind";
+  public static final String SERIALIZED_NAME_KIND = "kind";
+  @SerializedName(SERIALIZED_NAME_KIND)
   private String kind;
 
-  public static final String JSON_PROPERTY_METADATA = "metadata";
+  public static final String SERIALIZED_NAME_METADATA = "metadata";
+  @SerializedName(SERIALIZED_NAME_METADATA)
   private V1ObjectMeta metadata = null;
 
-  public static final String JSON_PROPERTY_SPEC = "spec";
+  public static final String SERIALIZED_NAME_SPEC = "spec";
+  @SerializedName(SERIALIZED_NAME_SPEC)
   private V1ImageSpec spec;
 
-  public static final String JSON_PROPERTY_STATUS = "status";
+  public static final String SERIALIZED_NAME_STATUS = "status";
+  @SerializedName(SERIALIZED_NAME_STATUS)
   private V1ImageStatus status;
 
   public V1Image() { 
@@ -68,16 +62,12 @@ public class V1Image implements io.kubernetes.client.common.KubernetesObject {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources")
-  @JsonProperty(JSON_PROPERTY_API_VERSION)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public String getApiVersion() {
     return apiVersion;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_API_VERSION)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setApiVersion(String apiVersion) {
     this.apiVersion = apiVersion;
   }
@@ -95,16 +85,12 @@ public class V1Image implements io.kubernetes.client.common.KubernetesObject {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds")
-  @JsonProperty(JSON_PROPERTY_KIND)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public String getKind() {
     return kind;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_KIND)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setKind(String kind) {
     this.kind = kind;
   }
@@ -122,16 +108,12 @@ public class V1Image implements io.kubernetes.client.common.KubernetesObject {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
-  @JsonProperty(JSON_PROPERTY_METADATA)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public V1ObjectMeta getMetadata() {
     return metadata;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_METADATA)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMetadata(V1ObjectMeta metadata) {
     this.metadata = metadata;
   }
@@ -149,16 +131,12 @@ public class V1Image implements io.kubernetes.client.common.KubernetesObject {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
-  @JsonProperty(JSON_PROPERTY_SPEC)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public V1ImageSpec getSpec() {
     return spec;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SPEC)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSpec(V1ImageSpec spec) {
     this.spec = spec;
   }
@@ -176,16 +154,12 @@ public class V1Image implements io.kubernetes.client.common.KubernetesObject {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
-  @JsonProperty(JSON_PROPERTY_STATUS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public V1ImageStatus getStatus() {
     return status;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_STATUS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setStatus(V1ImageStatus status) {
     this.status = status;
   }

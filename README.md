@@ -429,11 +429,11 @@ $ cp target/k8s.json target/openapi/
 Finally we can create the code and copy the bits we care about back into the main project:
 
 ```
-$ (cd target/openapi; LIBRARY=resttemplate OPENAPI_SKIP_BASE_INTERFACE=true KUBERNETES_CRD_MODE=true mvn -Dgenerator.spec.path=k8s.json -D=generator.client.version=0.0.1 -D=generator.package.name=io.kubernetes.client.examples -D=openapi-generator-version=6.0.0-beta generate-sources)
+$ (cd target/openapi; LIBRARY=rest-assured OPENAPI_SKIP_BASE_INTERFACE=true KUBERNETES_CRD_MODE=true mvn -Dgenerator.spec.path=k8s.json -D=generator.client.version=0.0.1 -D=generator.package.name=io.kubernetes.client.examples -D=openapi-generator-version=6.0.0-beta generate-sources)
 $ cp -rf target/openapi/src/main/java/io/kubernetes/client/examples/models src/main/java/io/kubernetes/client/examples
 ```
 
-> N.B. the `LIBRARY=resttemplate` has no impact on the generated code (no client is needed), but there is a [bug in the generator](https://github.com/OpenAPITools/openapi-generator/issues/12391) that makes it fail with the more obvious choice of `native`
+> N.B. the `LIBRARY=rest-assured` has no direct impact on the generated code (no client is needed), but there is a [bug in the generator](https://github.com/OpenAPITools/openapi-generator/issues/12391) that makes it fail with the more obvious choice of `native`. Choosing `rest-assured` has a side effect of forcing the JSON serializer to GSON.
 
 ### Docker in Docker and Kind
 

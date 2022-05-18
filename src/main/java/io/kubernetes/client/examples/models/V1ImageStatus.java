@@ -15,10 +15,7 @@ package io.kubernetes.client.examples.models;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.gson.annotations.SerializedName;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -27,21 +24,18 @@ import io.swagger.annotations.ApiModelProperty;
  * ImageStatus defines the observed state of Image
  */
 @ApiModel(description = "ImageStatus defines the observed state of Image")
-@JsonPropertyOrder({
-  V1ImageStatus.JSON_PROPERTY_COMPLETE,
-  V1ImageStatus.JSON_PROPERTY_LATEST_IMAGE,
-  V1ImageStatus.JSON_PROPERTY_OBSERVED_GENERATION
-})
-@JsonTypeName("v1_Image_status")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T09:42:11.039198+01:00[Europe/London]")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2022-05-18T10:06:44.759878+01:00[Europe/London]")
 public class V1ImageStatus {
-  public static final String JSON_PROPERTY_COMPLETE = "complete";
+  public static final String SERIALIZED_NAME_COMPLETE = "complete";
+  @SerializedName(SERIALIZED_NAME_COMPLETE)
   private Boolean complete;
 
-  public static final String JSON_PROPERTY_LATEST_IMAGE = "latestImage";
+  public static final String SERIALIZED_NAME_LATEST_IMAGE = "latestImage";
+  @SerializedName(SERIALIZED_NAME_LATEST_IMAGE)
   private String latestImage;
 
-  public static final String JSON_PROPERTY_OBSERVED_GENERATION = "observedGeneration";
+  public static final String SERIALIZED_NAME_OBSERVED_GENERATION = "observedGeneration";
+  @SerializedName(SERIALIZED_NAME_OBSERVED_GENERATION)
   private Long observedGeneration;
 
   public V1ImageStatus() { 
@@ -59,16 +53,12 @@ public class V1ImageStatus {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
-  @JsonProperty(JSON_PROPERTY_COMPLETE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public Boolean getComplete() {
     return complete;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_COMPLETE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setComplete(Boolean complete) {
     this.complete = complete;
   }
@@ -86,16 +76,12 @@ public class V1ImageStatus {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
-  @JsonProperty(JSON_PROPERTY_LATEST_IMAGE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public String getLatestImage() {
     return latestImage;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_LATEST_IMAGE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setLatestImage(String latestImage) {
     this.latestImage = latestImage;
   }
@@ -113,16 +99,12 @@ public class V1ImageStatus {
   **/
   @javax.annotation.Nullable
   @ApiModelProperty(value = "")
-  @JsonProperty(JSON_PROPERTY_OBSERVED_GENERATION)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
   public Long getObservedGeneration() {
     return observedGeneration;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OBSERVED_GENERATION)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setObservedGeneration(Long observedGeneration) {
     this.observedGeneration = observedGeneration;
   }
