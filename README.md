@@ -372,12 +372,12 @@ From a cluster with all the CRDs:
 $ kubectl get --raw /openapi/v2 | jq 'with_entries(select([.key] | inside(["definitions", "components", "info", "swagger", "openapi"]))) + {paths:{}}' > target/k8s.json
 ```
 
-### Source code in C
+### Build a WASM from Source code in C
 
 Generate the client code (a profile is activated by the JSON file above):
 
 ```
-$ mvn install
+$ mvn install -P generation-c
 $ ls target/generated-sources/
 annotations  openapi
 ```
@@ -387,13 +387,7 @@ Then you can make a linkable library with `make` (or `emmake make` if you want a
 ```
 $ make clean
 $ emmake make
-$ tar -tzvf k8s-wasm.tgz
-drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 include/
-drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 include/k8s/
--rw-r--r-- dsyer/dsyer    1837 2022-04-28 10:15 include/k8s/io_k8s_api_certificates_v1beta1_certificate_signing_request_status.h
-...
--rw-r--r-- dsyer/dsyer    2655 2022-04-28 10:15 include/k8s/io_k8s_api_admissionregistration_v1_validating_webhook.h
--rw-r--r-- dsyer/dsyer    1762 2022-04-28 10:15 include/k8s/io_k8s_api_core_v1_probe.h
+$ tar -tzvf k8s-wasm.tgz | grep lib
 drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 lib/
 -rw-r--r-- dsyer/dsyer    5190 2022-04-28 10:15 lib/libk8s.a
 $ tar -tzvf k8s-wasm.tgz | grep com_example
@@ -405,12 +399,28 @@ $ tar -tzvf k8s-wasm.tgz | grep com_example
 
 ### Preprocessing the OpenAPI Spec
 
-The [Kubernetes Client](https://github.com/kubernetes-client/java) has a documented process for generating Java bindings to the CRDs. It involves pre-processing the JSON OpenAPI spec with python. We can do the same for our relatively simple use case using `jq`:
+The [Kubernetes Client](https://github.com/kubernetes-client/java) has a documented process for generating Java bindings to the CRDs. It involves pre-processing the JSON OpenAPI spec with python. We can do the same for our relatively simple use case using `jq`. First extract the info headers:
 
 ```
-$ cat target/k8s.json | jq '.definitions | with_entries( select(.key|startswith("com.example"))) | with_entries(.key|= sub("com.example.";""))'
-$ jq -s '.[0] + {definitions:.[1]} + {paths:{}}' <(jq 'with_entries(select([.key] | inside(["info", "swagger", "openapi"])))' target/k8s.json) <(jq '.definitions | with_entries( select(.key|startswith("com.example"))) | with_entries(.key|= sub("com.example.";"")) |with_entries(.value += {"x-implements":[if(.key|test(".*List.*")) then "io.kubernetes.client.common.KubernetesListObject" else "io.kubernetes.client.common.KubernetesObject" end]})' target/k8s.json ) > target/k8s-tmp.json
-$ sed -e 's,#/definitions/io.k8s.apimachinery.pkg.apis.meta.,#/definitions/,' -e 's,#/definitions/com.example.,#/definitions/,' target/k8s-tmp.json > target/k8s.json
+$ jq 'with_entries(select([.key] | inside(["info", "swagger", "openapi"])))' target/k8s.json > target/info.json
+```
+
+Then grab the definitions from our `com.example` group identifier:
+
+```
+$ jq '.definitions | with_entries( select(.key|startswith("com.example"))) | with_entries(.key|= sub("com.example.";"")) |with_entries(.value += {"x-implements":[if(.key|test(".*List.*")) then "io.kubernetes.client.common.KubernetesListObject" else "io.kubernetes.client.common.KubernetesObject" end]})' target/k8s.json > target/definitions.json
+```
+
+Then merge them and add empty `paths`:
+
+```
+$ jq -s '.[0] + {definitions:.[1]} + {paths:{}}' target/info.json target/definitions.json  > target/k8s.json
+```
+
+Plus a bit of search and replace for the long qualifiers in field type identifiers:
+
+```
+$ sed -i -e 's,#/definitions/io.k8s.apimachinery.pkg.apis.meta.,#/definitions/,' -e 's,#/definitions/com.example.,#/definitions/,' target/k8s.json
 ```
 
 ### Generating Code from Just the CRDs
