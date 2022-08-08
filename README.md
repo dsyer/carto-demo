@@ -372,31 +372,6 @@ From a cluster with all the CRDs:
 $ kubectl get --raw /openapi/v2 | jq 'with_entries(select([.key] | inside(["definitions", "components", "info", "swagger", "openapi"]))) + {paths:{}}' > target/k8s.json
 ```
 
-### Build a WASM from Source code in C
-
-Generate the client code (a profile is activated by the JSON file above):
-
-```
-$ mvn install -P generation-c
-$ ls target/generated-sources/
-annotations  openapi
-```
-
-Then you can make a linkable library with `make` (or `emmake make` if you want a WASM):
-
-```
-$ make clean
-$ emmake make
-$ tar -tzvf k8s-wasm.tgz | grep lib
-drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 lib/
--rw-r--r-- dsyer/dsyer    5190 2022-04-28 10:15 lib/libk8s.a
-$ tar -tzvf k8s-wasm.tgz | grep com_example
--rw-r--r-- dsyer/dsyer     982 2022-04-28 10:15 include/k8s/com_example_v1_image_spec.h
--rw-r--r-- dsyer/dsyer    1270 2022-04-28 10:15 include/k8s/com_example_v1_image_list.h
--rw-r--r-- dsyer/dsyer    1103 2022-04-28 10:15 include/k8s/com_example_v1_image_status.h
--rw-r--r-- dsyer/dsyer    1367 2022-04-28 10:15 include/k8s/com_example_v1_image.h
-```
-
 ### Preprocessing the OpenAPI Spec
 
 The [Kubernetes Client](https://github.com/kubernetes-client/java) has a documented process for generating Java bindings to the CRDs. It involves pre-processing the JSON OpenAPI spec with python. We can do the same for our relatively simple use case using `jq`. First extract the info headers:
@@ -537,4 +512,44 @@ The official way (involving docker and kind) is much heavier and probably more f
 ```
 $ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd)":"$(pwd)" -ti --network host docker.pkg.github.com/kubernetes-client/java/crd-model-gen:v1.0.6 /generate.sh -u $(pwd)/src/main/k8s/crds/image.yaml -n com.example -p com.dsyer -o "$(pwd)"
 $ sudo chown -R dsyer:dsyer src/main/java/com/dsyer/
+```
+
+## Build a WASM from Source code in C
+
+Generate the client code (a profile is activated by the JSON file above):
+
+```
+$ mvn install -P generation-c
+$ ls target/generated-sources/
+annotations  openapi
+```
+
+Then you can make a linkable library with `make` (or `emmake make` if you want a WASM):
+
+```
+$ make clean
+$ emmake make
+$ tar -tzvf k8s-wasm.tgz | grep lib
+drwxr-xr-x dsyer/dsyer       0 2022-04-28 10:15 lib/
+-rw-r--r-- dsyer/dsyer    5190 2022-04-28 10:15 lib/libk8s.a
+$ tar -tzvf k8s-wasm.tgz | grep com_example
+-rw-r--r-- dsyer/dsyer     982 2022-04-28 10:15 include/k8s/com_example_v1_image_spec.h
+-rw-r--r-- dsyer/dsyer    1270 2022-04-28 10:15 include/k8s/com_example_v1_image_list.h
+-rw-r--r-- dsyer/dsyer    1103 2022-04-28 10:15 include/k8s/com_example_v1_image_status.h
+-rw-r--r-- dsyer/dsyer    1367 2022-04-28 10:15 include/k8s/com_example_v1_image.h
+```
+
+## Generate Rust Bindings
+
+To generate some code from the CRDs (assuming `target/k8s.json` is pre-processed as above):
+
+```
+$ mvn generate-sources -P generator-rust
+```
+
+The generated code will be in `target/rust`. You will need to copy the `src/lib/models` code and include the [`k8s-openapi`](https://docs.rs/k8s-openapi/latest/k8s_openapi/) dependency in `Cargo.toml`, e.g:
+
+```toml
+[dependencies]
+k8s-openapi = { version = "0.14.0", features = ["v1_19"], default-features = false }
 ```
